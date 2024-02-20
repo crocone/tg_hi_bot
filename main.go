@@ -9,14 +9,31 @@ import (
 )
 
 var bot *tgbotapi.BotAPI
-var startMenu = tgbotapi.NewInlineKeyboardMarkup(
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Скажи привет", "hi"),
-	),
-	tgbotapi.NewInlineKeyboardRow(
-		tgbotapi.NewInlineKeyboardButtonData("Скажи пока", "buy"),
-	),
-)
+
+type button struct {
+	name string
+	data string
+}
+
+func startMenu() tgbotapi.InlineKeyboardMarkup {
+	states := []button{
+		{
+			name: "Привет",
+			data: "hi",
+		},
+		{
+			name: "Пока",
+			data: "buy",
+		},
+	}
+
+	buttons := make([][]tgbotapi.InlineKeyboardButton, len(states))
+	for index, state := range states {
+		buttons[index] = tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonData(state.name, state.data))
+	}
+
+	return tgbotapi.NewInlineKeyboardMarkup(buttons...)
+}
 
 func main() {
 	err := godotenv.Load(".env")
@@ -70,7 +87,7 @@ func commands(update tgbotapi.Update) {
 	switch command {
 	case "start":
 		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите действие")
-		msg.ReplyMarkup = startMenu
+		msg.ReplyMarkup = startMenu()
 		msg.ParseMode = "Markdown"
 		sendMessage(msg)
 	}
